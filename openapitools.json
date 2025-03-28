@@ -1,0 +1,17 @@
+{
+  "$schema": "./node_modules/@openapitools/openapi-generator-cli/config.schema.json",
+  "spaces": 4,
+  "generator-cli": {
+    "version": "7.11.0",
+    "generators": {
+      "airportsLiveDataApiClient": {
+        "generatorName": "typescript-angular",
+        "inputSpec": "./openapi/airportslive-data.yaml",
+        "output": "./src/api/data",
+        "additionalProperties": {
+          "fileNaming": "kebab-case"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "arrowParens": "always",
+  "bracketSpacing": true,
+  "endOfLine": "lf",
+  "printWidth": 160,
+  "semi": true,
+  "useTabs": false,
+  "trailingComma": "all",
+  "tabWidth": 4,
+  "singleQuote": true,
+  "quoteProps": "consistent",
+  "singleAttributePerLine": true,
+  "bracketSameLine": false,
+  "editorconfig": true,
+  "overrides": [
+    {
+      "files": ["*.json", ".prettierrc", "*.yml", "*.yaml"],
+      "options": {
+        "tabWidth": 2
+      }
+    }
+  ],
+  "plugins": ["prettier-plugin-tailwindcss", "@trivago/prettier-plugin-sort-imports"],
+  "importOrder": ["^@angular/(.*)$", "^rxjs(/.*)?$", "<THIRD_PARTY_MODULES>", "^@(components|services|pipes|directives|api)", "^[../]", "^[./]"],
+  "importOrderParserPlugins": ["typescript", "classProperties", "decorators-legacy"],
+  "importOrderSeparation": true,
+  "importOrderSortSpecifiers": true,
+  "importOrderCaseInsensitive": true
+}

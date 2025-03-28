@@ -4,9 +4,13 @@ root = true
 [*]
 charset = utf-8
 indent_style = space
-indent_size = 2
+indent_size = 4
 insert_final_newline = true
 trim_trailing_whitespace = true
+max_line_length = 160
+
+[{*.json,.prettierrc,*.yaml,*.yml}]
+indent_size = 2
 
 [*.ts]
 quote_type = single
@@ -15,3 +19,6 @@ ij_typescript_use_double_quotes = false
 [*.md]
 max_line_length = off
 trim_trailing_whitespace = false
+
+[*.go]
+indent_style = tab

@@ -1,0 +1,16 @@
+set shell := ["zsh", "-ci"]
+
+default:
+    @just --list
+
+data-service:
+    cd cmd/data && go run .
+
+cronjobs-service:
+    cd cmd/cronjobs && go run .
+
+importer-service:
+    cd cmd/importer && go run . ./airports.csv ./countries.csv ./regions.csv
+
+processor-service:
+    cd cmd/processor && go run .

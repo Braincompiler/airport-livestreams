@@ -1,0 +1,156 @@
+openapi: 3.1.0
+info:
+  title: AirportsLives API
+  description: AirportsLive API
+  version: 1.0.0
+servers:
+  - url: 'http://localhost:9100'
+tags:
+  - name: AirportsBaseData
+  - name: LivestreamsData
+paths:
+  /airports:
+    get:
+      summary: Get all airports
+      tags:
+        - AirportsBaseData
+      operationId: getAirports
+      parameters:
+        - name: type
+          in: query
+          description: The type of airports to return
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+      responses:
+        '200':
+          description: A list of airports
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Airport'
+
+  /airports/grouped-by-continent:
+    get:
+      summary: Get all airports grouped by continent
+      tags:
+        - AirportsBaseData
+      operationId: getAirportsGroupedByContinent
+      parameters:
+        - name: type
+          in: query
+          description: The type of airports to return
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+      responses:
+        '200':
+          description: A list of airports grouped by continent
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Airport'
+
+  /livestreams:
+    get:
+      summary: Get all livestreams
+      tags:
+        - LivestreamsData
+      operationId: getLivestreams
+      responses:
+        '200':
+          description: A list of livestreams
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Livestream'
+
+components:
+  schemas:
+    Airport:
+      type: object
+      required:
+        - id
+        - icao
+        - lat
+        - lon
+      properties:
+        id:
+          type: string
+          format: uuid
+        icao:
+          type: string
+        iata:
+          type: string
+        name:
+          type: string
+        lat:
+          type: number
+          format: double
+        lon:
+          type: number
+          format: double
+        elevation:
+          type: number
+          format: double
+        homeLink:
+          type: string
+        wikipediaLink:
+          type: string
+
+    Livestream:
+      type: object
+      properties:
+        #        id:
+        #          type: string
+        #          format: uuid
+        icao:
+          type: string
+        iata:
+          type: string
+        name:
+          type: string
+        lat:
+          type: number
+          format: double
+        lon:
+          type: number
+          format: double
+        youtubeURL:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        channelTitle:
+          type: string
+        thumbnails:
+          type: array
+          items:
+            $ref: '#/components/schemas/Thumbnail'
+
+    Thumbnail:
+      type: object
+      properties:
+        type:
+          type: string
+        url:
+          type: string
+        width:
+          type: number
+          format: int32
+        height:
+          type: number
+          format: int32

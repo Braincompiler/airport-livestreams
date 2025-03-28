@@ -1,0 +1,40 @@
+name: airports-live
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: always
+    container_name: postgres
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - '${DB_PORT}:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  valkey:
+    image: valkey/valkey:8-alpine
+    restart: always
+    container_name: valkey
+    ports:
+      - '${VALKEY_PORT}:6379'
+    volumes:
+      - valkey_data:/data
+      # - ./valkey.conf:/usr/local/etc/valkey/valkey.conf
+
+  mqtt:
+    image: eclipse-mosquitto:2.0
+    restart: always
+    container_name: mqtt
+    ports:
+      - '${MQTT_PORT}:1883'
+    volumes:
+      - ./mqtt/mosquitto.conf:/mosquitto/config/mosquitto.conf
+      - mqtt_data:/mosquitto/data
+
+volumes:
+  postgres_data:
+  valkey_data:
+  mqtt_data:

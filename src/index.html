@@ -1,13 +1,33 @@
 <!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <title>AirportLivestreams</title>
-  <base href="/">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="icon" type="image/x-icon" href="favicon.ico">
-</head>
-<body>
-  <als-root></als-root>
-</body>
+<html
+    lang="en"
+    data-theme="dark"
+>
+    <head>
+        <meta charset="utf-8" />
+        <title>Airport Livestreams</title>
+        <base href="/" />
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1"
+        />
+        <link
+            rel="icon"
+            type="image/x-icon"
+            href="favicon.ico"
+        />
+    </head>
+    <body class="bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100">
+        <als-root></als-root>
+        <script>
+            document.documentElement.classList.toggle(
+                'dark',
+                localStorage['theme.current'] === 'dark' || (!('theme.current' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches),
+            );
+        </script>
+        <script
+            src="https://www.youtube.com/iframe_api"
+            async
+        ></script>
+    </body>
 </html>

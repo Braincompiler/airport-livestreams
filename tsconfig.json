@@ -3,6 +3,7 @@
 {
   "compileOnSave": false,
   "compilerOptions": {
+    "baseUrl": "./",
     "outDir": "./dist/out-tsc",
     "strict": true,
     "noImplicitOverride": true,
@@ -16,7 +17,22 @@
     "moduleResolution": "bundler",
     "importHelpers": true,
     "target": "ES2022",
-    "module": "ES2022"
+    "module": "ES2022",
+    "paths": {
+      "@utils/*": ["src/app/utils/*"],
+      "@utils": ["src/app/utils/index.ts"],
+      "@components/*": ["src/app/components/*"],
+      "@components": ["src/app/components/index.ts"],
+      "@pages/*": ["src/app/pages/*"],
+      "@pages": ["src/app/pages/index.ts"],
+      "@services/*": ["src/app/services/*"],
+      "@services": ["src/app/services/index.ts"],
+      "@pipes/*": ["src/app/pipes/*"],
+      "@pipes": ["src/app/pipes/index.ts"],
+      "@interceptors/*": ["src/app/interceptors/*"],
+      "@interceptors": ["src/app/interceptors/index.ts"],
+      "@api/*": ["src/api/*"]
+    }
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,
