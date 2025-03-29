@@ -54,13 +54,13 @@ const MAX_MAP_ZOOM = 14;
             ></div>
         </div>
 
-        @if (selectedLivestream()) {
+        @if (hasSelectedLivestreams()) {
             <dialog
                 class="modal"
                 #livestreamModal
             >
-                <div class="modal-box max-w-3/5">
-                    <als-livestream-card [livestream]="selectedLivestream()!" />
+                <div class="modal-box max-w-full">
+                    <als-livestream-card [livestreams]="selectedLivestreams()" />
                     <div class="modal-action">
                         <form method="dialog">
                             <button class="btn">Close</button>
@@ -90,9 +90,10 @@ export class MapComponent {
     public readonly livestreams = toSignal(this.#livestreamsDataService.getLivestreams());
 
     public readonly currentZoom = toSignal(this.#zoom$);
-    public readonly currentZoomInt = computed(() => Math.floor(this.currentZoom() ?? 1));
+    // public readonly currentZoomInt = computed(() => Math.floor(this.currentZoom() ?? 1));
 
-    public readonly selectedLivestream = signal<Livestream | null>(null);
+    public readonly selectedLivestreams = signal<Livestream[]>([]);
+    public readonly hasSelectedLivestreams = computed(() => this.selectedLivestreams().length > 0);
 
     public constructor() {
         const raster = new TileLayer({
@@ -142,10 +143,11 @@ export class MapComponent {
                 style: (clusterFeature) => {
                     const features = clusterFeature.get('features') as Feature[];
                     const size = features.length;
-                    const hasLivestreams = this.#hasAtLeastOneFeatureALiveAirport(features, livestreams);
+                    const foundLivestreams = this.#findLivestreamsByFeatures(features, livestreams);
+                    const hasLivestreams = foundLivestreams.length > 0;
 
-                    let radius = 10;
-                    let text = String(size);
+                    let radius = 12;
+                    let text = hasLivestreams ? `${foundLivestreams.length}/${size}` : String(size);
                     let fontSize = 7;
                     let fontWeight = 'normal';
                     if (size === 1) {
@@ -155,8 +157,8 @@ export class MapComponent {
 
                         if (hasLivestreams) {
                             fontWeight = 'bold';
-                            radius = 25;
-                            fontSize = 13;
+                            radius = 23;
+                            fontSize = 12;
                         }
                     }
 
@@ -202,17 +204,18 @@ export class MapComponent {
                         // console.log(coords, currentZoom);
 
                         mapView?.animate({ center: coords, zoom: Math.max(Math.min(currentZoom + 2, MAX_MAP_ZOOM), MAX_MAP_ZOOM), duration: 500 }, (a) => {
-                            const livestream = this.#findLivestreamByFeature(feature);
-                            if (!isNil(livestream)) {
-                                this.selectedLivestream.set(livestream);
+                            const livestreams = this.#findLivestreamsByFeature(feature);
+                            if (livestreams.length > 0) {
+                                // @TODO: What if multiple livestreams?
+                                this.selectedLivestreams.set(livestreams);
                                 runInInjectionContext(this.#injector, () =>
                                     afterNextRender(() => {
                                         const el = this.livestreamModal()?.nativeElement;
                                         if (!isNil(el)) {
                                             el.showModal();
                                             this.#renderer.listen(el, 'close', () => {
-                                                console.log('close');
-                                                this.selectedLivestream.set(null);
+                                                // console.log('close');
+                                                this.selectedLivestreams.set([]);
                                             });
                                         }
                                     }),
@@ -241,7 +244,7 @@ export class MapComponent {
 
     #hasAtLeastOneFeatureALiveAirport(features: Feature[], livestreams: Livestream[]): boolean {
         for (const feature of features) {
-            if (!isNil(this.#findLivestreamByFeature(feature))) {
+            if (this.#findLivestreamsByFeature(feature).length > 0) {
                 return true;
             }
         }
@@ -249,10 +252,17 @@ export class MapComponent {
         return false;
     }
 
-    #findLivestreamByFeature(feature: Feature): Livestream | undefined {
-        const livestreams = this.livestreams() ?? [];
+    #findLivestreamsByFeature(feature: Feature, livestreams = this.livestreams() ?? []): Livestream[] {
         const icao = feature.get('icao');
 
-        return livestreams.find((ls) => ls.icao === icao);
+        return livestreams.filter((ls) => ls.icao === icao);
+    }
+
+    #findLivestreamsByFeatures(features: Feature[], livestreams = this.livestreams() ?? []): Livestream[] {
+        let foundLivestreams: Livestream[] = [];
+
+        features.forEach((feature) => (foundLivestreams = [...foundLivestreams, ...this.#findLivestreamsByFeature(feature, livestreams)]));
+
+        return foundLivestreams;
     }
 }

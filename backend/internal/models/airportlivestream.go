@@ -15,12 +15,12 @@ const (
 )
 
 type AirportLivestreamOnYoutube struct {
-	Title        string                                `json:"title"`
-	ChannelTitle string                                `json:"channelTitle"`
-	Description  string                                `json:"description"`
-	VideoId      string                                `json:"videoId"`
-	ChannelId    string                                `json:"channelId"`
-	Thumbnails   []AirportLivestreamOnYoutubeThumbnail `json:"thumbnails"`
+	Title        string `json:"title"`
+	ChannelTitle string `json:"channelTitle"`
+	Description  string `json:"description"`
+	VideoId      string `json:"videoId"`
+	ChannelId    string `json:"channelId"`
+	// Thumbnails   []AirportLivestreamOnYoutubeThumbnail `json:"thumbnails"`
 }
 
 type AirportLivestreamOnYoutubeThumbnail struct {
@@ -39,29 +39,29 @@ func (a *AirportLivestreamsOnYoutubeList) UnmarshalBinary(data []byte) error {
 }
 
 type AirportLivestream struct {
-	Icao         string                                `json:"icao"`
-	Iata         string                                `json:"iata"`
-	Latitude     float64                               `json:"lat"`
-	Longitude    float64                               `json:"lon"`
-	YoutubeURL   string                                `json:"youtubeURL"`
-	Title        string                                `json:"title"`
-	Description  string                                `json:"description"`
-	ChannelTitle string                                `json:"channelTitle"`
-	Thumbnails   []AirportLivestreamOnYoutubeThumbnail `json:"thumbnails"`
+	Icao      string  `json:"icao"`
+	Iata      string  `json:"iata"`
+	Latitude  float64 `json:"lat"`
+	Longitude float64 `json:"lon"`
+	// YoutubeURL   string                                `json:"youtubeURL"`
+	VideoId      string `json:"videoId"`
+	Title        string `json:"title"`
+	Description  string `json:"description"`
+	ChannelTitle string `json:"channelTitle"`
+	// Thumbnails   []AirportLivestreamOnYoutubeThumbnail `json:"thumbnails"`
 }
 
 // , lat, lon float64
 func (a *AirportLivestreamOnYoutube) MapToAirportLivestream(icao, iata string) AirportLivestream {
 	return AirportLivestream{
-		Icao: icao,
-		Iata: iata,
-		// Latitude:     lat,
-		// Longitude:    lon,
+		Icao:         icao,
+		Iata:         iata,
 		Title:        a.Title,
 		Description:  a.Description,
 		ChannelTitle: a.ChannelTitle,
-		Thumbnails:   a.Thumbnails,
-		YoutubeURL:   "https://www.youtube.com/watch?v=" + a.VideoId, // https://www.youtube.com/watch?v=WezTqSbCIIQ
+		// Thumbnails:   a.Thumbnails,
+		VideoId: a.VideoId,
+		// YoutubeURL:   "https://www.youtube.com/watch?v=" + a.VideoId, // https://www.youtube.com/watch?v=WezTqSbCIIQ
 	}
 }
 

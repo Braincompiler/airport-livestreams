@@ -128,18 +128,20 @@ components:
         lon:
           type: number
           format: double
-        youtubeURL:
+        videoId:
           type: string
+        #        youtubeURL:
+        #          type: string
         title:
           type: string
         description:
           type: string
         channelTitle:
           type: string
-        thumbnails:
-          type: array
-          items:
-            $ref: '#/components/schemas/Thumbnail'
+    #        thumbnails:
+    #          type: array
+    #          items:
+    #            $ref: '#/components/schemas/Thumbnail'
 
     Thumbnail:
       type: object
