@@ -19,10 +19,12 @@ import { BehaviorSubject, throttleTime } from 'rxjs';
 import { Feature, Map as OlMap, View } from 'ol';
 import { defaults as defaultControls } from 'ol/control';
 import { boundingExtent } from 'ol/extent';
+import { FeatureLike } from 'ol/Feature';
 import { Point } from 'ol/geom';
 import { defaults as defaultInteractions } from 'ol/interaction';
 import TileLayer from 'ol/layer/Tile';
 import VectorLayer from 'ol/layer/Vector';
+import BaseObject from 'ol/Object';
 import { fromLonLat } from 'ol/proj';
 import { Cluster, OSM } from 'ol/source';
 import VectorSource from 'ol/source/Vector';
@@ -37,7 +39,6 @@ const MAX_MAP_ZOOM = 14;
 
 @Component({
     selector: 'als-map',
-    imports: [LivestreamCardComponent],
     styles: [
         `
             .map {
@@ -70,8 +71,9 @@ const MAX_MAP_ZOOM = 14;
             </dialog>
         }
     `,
+    imports: [LivestreamCardComponent],
 })
-export class MapComponent {
+export class MapPageComponent {
     readonly #airportsBaseDataService = inject(AirportsBaseDataService);
     readonly #livestreamsDataService = inject(LivestreamsDataService);
     readonly #zone = inject(NgZone);
@@ -89,7 +91,7 @@ export class MapComponent {
     public readonly airports = toSignal(this.#airportsBaseDataService.getAirports(['large_airport', 'medium_airport']));
     public readonly livestreams = toSignal(this.#livestreamsDataService.getLivestreams());
 
-    public readonly currentZoom = toSignal(this.#zoom$);
+    // public readonly currentZoom = toSignal(this.#zoom$);
     // public readonly currentZoomInt = computed(() => Math.floor(this.currentZoom() ?? 1));
 
     public readonly selectedLivestreams = signal<Livestream[]>([]);
@@ -133,6 +135,64 @@ export class MapComponent {
                 ),
             });
 
+            const normalStyle = new Style({
+                image: new Circle({
+                    radius: 12,
+                    stroke: new Stroke({
+                        color: '#616161',
+                        width: 2,
+                    }),
+                    fill: new Fill({
+                        color: '#e0e0e0',
+                    }),
+                }),
+                text: new Text({
+                    font: `normal 7px "system-ui"`,
+                    // text: text,
+                    fill: new Fill({
+                        color: '#333',
+                    }),
+                }),
+            });
+            const hasLivestreamsStyle = new Style({
+                image: new Circle({
+                    radius: 15,
+                    stroke: new Stroke({
+                        color: '#33691e',
+                        width: 2,
+                    }),
+                    fill: new Fill({
+                        color: '#71be16',
+                    }),
+                }),
+                text: new Text({
+                    font: `normal 9px "system-ui"`,
+                    // text: text,
+                    fill: new Fill({
+                        color: '#333',
+                    }),
+                }),
+            });
+            const hasLivestreamsAndIsAirportStyle = new Style({
+                image: new Circle({
+                    radius: 23,
+                    stroke: new Stroke({
+                        color: '#33691e',
+                        width: 2,
+                    }),
+                    fill: new Fill({
+                        color: '#71be16',
+                    }),
+                }),
+                text: new Text({
+                    font: `bold 12px "system-ui"`,
+                    // text: text,
+                    fill: new Fill({
+                        color: '#333',
+                    }),
+                }),
+            });
+
             const cluster = new VectorLayer({
                 opacity: 1,
                 source: new Cluster({
@@ -140,47 +200,28 @@ export class MapComponent {
                     distance: 100,
                     // minDistance: 20,
                 }),
-                style: (clusterFeature) => {
+                style: (clusterFeature: FeatureLike) => {
                     const features = clusterFeature.get('features') as Feature[];
                     const size = features.length;
                     const foundLivestreams = this.#findLivestreamsByFeatures(features, livestreams);
                     const hasLivestreams = foundLivestreams.length > 0;
-
-                    let radius = 12;
                     let text = hasLivestreams ? `${foundLivestreams.length}/${size}` : String(size);
-                    let fontSize = 7;
-                    let fontWeight = 'normal';
-                    if (size === 1) {
-                        text = features[0].get('icao');
-                        radius = 15;
-                        fontSize = 8;
 
-                        if (hasLivestreams) {
-                            fontWeight = 'bold';
-                            radius = 23;
-                            fontSize = 12;
+                    (clusterFeature as BaseObject).set('hasLivestreams', hasLivestreams);
+
+                    let style = normalStyle;
+                    if (hasLivestreams) {
+                        if (size === 1) {
+                            text = features[0].get('icao');
+                            style = hasLivestreamsAndIsAirportStyle;
+                        } else {
+                            style = hasLivestreamsStyle;
                         }
                     }
 
-                    return new Style({
-                        image: new Circle({
-                            radius,
-                            stroke: new Stroke({
-                                color: hasLivestreams ? '#33691e' : '#616161',
-                                width: 2,
-                            }),
-                            fill: new Fill({
-                                color: hasLivestreams ? '#71be16' : '#e0e0e0',
-                            }),
-                        }),
-                        text: new Text({
-                            font: `${fontWeight} ${fontSize}px "system-ui"`,
-                            text: text,
-                            fill: new Fill({
-                                color: '#333',
-                            }),
-                        }),
-                    });
+                    style.getText()?.setText(text);
+
+                    return style;
                 },
             });
 
@@ -203,7 +244,7 @@ export class MapComponent {
                         const currentZoom = mapView?.getZoom() ?? 1;
                         // console.log(coords, currentZoom);
 
-                        mapView?.animate({ center: coords, zoom: Math.max(Math.min(currentZoom + 2, MAX_MAP_ZOOM), MAX_MAP_ZOOM), duration: 500 }, (a) => {
+                        mapView?.animate({ center: coords, zoom: Math.max(Math.min(currentZoom + 2, MAX_MAP_ZOOM), MAX_MAP_ZOOM), duration: 500 }, () => {
                             const livestreams = this.#findLivestreamsByFeature(feature);
                             if (livestreams.length > 0) {
                                 // @TODO: What if multiple livestreams?
@@ -234,11 +275,37 @@ export class MapComponent {
         this.#olMap?.on('pointermove', (evt) => {
             const map = this.#olMap!;
             const targetElement = map.getTargetElement();
-            if (map.forEachFeatureAtPixel(evt.pixel, (f) => !!f)) {
+            const featureAtPixel = map.forEachFeatureAtPixel(evt.pixel, (f: any) => f);
+
+            // if (!isNil(featureAtPixel)) {
+            //     console.log((featureAtPixel as any).get('hasLivestreams'));
+            // }
+
+            if (!isNil(featureAtPixel)) {
                 targetElement.style.cursor = 'pointer';
             } else {
                 targetElement.style.cursor = '';
             }
+
+            // map.on('pointermove', function (e) {
+            //     if (selected !== null) {
+            //         selected.setStyle(undefined);
+            //         selected = null;
+            //     }
+            //
+            //     map.forEachFeatureAtPixel(e.pixel, function (f) {
+            //         selected = f;
+            //         selectStyle.getFill().setColor(f.get('COLOR') || '#eeeeee');
+            //         f.setStyle(selectStyle);
+            //         return true;
+            //     });
+            //
+            //     if (selected) {
+            //         status.innerHTML = selected.get('ECO_NAME');
+            //     } else {
+            //         status.innerHTML = '&nbsp;';
+            //     }
+            // });
         });
     }
 

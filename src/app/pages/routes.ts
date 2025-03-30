@@ -3,6 +3,19 @@ import { Routes } from '@angular/router';
 export const routes: Routes = [
     {
         path: '',
-        loadComponent: () => import('./map.component').then((m) => m.MapComponent),
+        redirectTo: 'map',
+        pathMatch: 'full',
+    },
+    {
+        path: 'map',
+        loadComponent: () => import('./map').then((m) => m.MapPageComponent),
+    },
+    {
+        path: 'list',
+        loadComponent: () => import('./list').then((m) => m.ListPageComponent),
+    },
+    {
+        path: 'report-missing-livestream',
+        loadComponent: () => import('./report-missing-livestream').then((m) => m.ReportMissingLivestreamPageComponent),
     },
 ];
