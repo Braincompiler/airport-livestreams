@@ -33,7 +33,6 @@ export const appConfig: ApplicationConfig = {
             withFetch(), //
             withInterceptors([dataInterceptor]),
         ),
-
         provideDataApi(
             withDataApiConfiguration({
                 basePath: environment.dataEndpoint,

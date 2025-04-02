@@ -1,20 +1,20 @@
-import { Component, DestroyRef, inject, signal } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { NavigationEnd, Router, RouterLink } from '@angular/router';
+import { KeyValuePipe } from '@angular/common';
+import { Component, computed, DestroyRef, effect, ElementRef, inject, input, viewChild } from '@angular/core';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 
-import { filter } from 'rxjs';
+import { debounceTime, map, tap } from 'rxjs';
 
-export interface IRouteState {
-    route: string;
-    text: string;
-}
+import { AppStore, IS_MAC, ShortcutsStore } from '@store';
+import { isEmpty } from '@utils';
+import { groupBy, isNil } from 'ramda';
 
-const ROUTE_STATE_MAP = { route: '/map', text: 'Livestreams map' };
-const ROUTE_STATE_LIST = { route: '/list', text: 'Livestreams list' };
-const ROUTE_STATE_ALTERNATES: Record<string, IRouteState> = {
-    '/list': ROUTE_STATE_MAP,
-    '/map': ROUTE_STATE_LIST,
-};
+import { Livestream } from '@api/data';
+import { MenuLinksComponent } from '@components/menu-links';
+
+import { IRouteState } from '../app/app.component';
+import { TooltipComponent } from './tooltip';
 
 @Component({
     selector: 'als-topbar',
@@ -44,13 +44,10 @@ const ROUTE_STATE_ALTERNATES: Record<string, IRouteState> = {
                 </div>
 
                 <div class="hidden flex-none lg:block">
-                    <ul class="menu menu-horizontal">
-                        @let routeState = nextRoutingState();
-                        <li>
-                            <a [routerLink]="routeState.route">{{ routeState.text }}</a>
-                        </li>
-                        <li routerLink="/report-missing-livestream"><a>Report missing livestream</a></li>
-                    </ul>
+                    <als-menu-links
+                        ulCssClasses="menu menu-horizontal"
+                        [routeState]="routeState()"
+                    />
                 </div>
             </div>
             <div class="navbar-center">
@@ -62,6 +59,14 @@ const ROUTE_STATE_ALTERNATES: Record<string, IRouteState> = {
                 </a>
             </div>
             <div class="navbar-end">
+                <span class="mr-3 text-xs">
+                    <als-tooltip
+                        [text]="livestreamStatsTitle()"
+                        placement="bottom"
+                    >
+                        {{ livestreamStats() }}
+                    </als-tooltip>
+                </span>
                 <!--                TODO: notify about new livestreams-->
                 <!--                <button class="btn btn-ghost btn-circle mr-3">-->
                 <!--                    <div class="indicator">-->
@@ -82,52 +87,142 @@ const ROUTE_STATE_ALTERNATES: Record<string, IRouteState> = {
                 <!--                        <span class="badge badge-xs badge-primary indicator-item"></span>-->
                 <!--                    </div>-->
                 <!--                </button>-->
-                <label class="input">
-                    <svg
-                        class="h-[1em] opacity-50"
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 24 24"
-                    >
-                        <g
-                            stroke-linejoin="round"
-                            stroke-linecap="round"
-                            stroke-width="2.5"
-                            fill="none"
-                            stroke="currentColor"
+                <div class="dropdown dropdown-center">
+                    <label class="input">
+                        <svg
+                            class="h-[1em] opacity-50"
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 24 24"
                         >
-                            <circle
-                                cx="11"
-                                cy="11"
-                                r="8"
-                            ></circle>
-                            <path d="m21 21-4.3-4.3"></path>
-                        </g>
-                    </svg>
-                    <input
-                        type="search"
-                        class="grow"
-                        placeholder="Search"
-                    />
-                    <kbd class="kbd kbd-sm">⌘</kbd>
-                    <kbd class="kbd kbd-sm">K</kbd>
-                </label>
+                            <g
+                                stroke-linejoin="round"
+                                stroke-linecap="round"
+                                stroke-width="2.5"
+                                fill="none"
+                                stroke="currentColor"
+                            >
+                                <circle
+                                    cx="11"
+                                    cy="11"
+                                    r="8"
+                                ></circle>
+                                <path d="m21 21-4.3-4.3"></path>
+                            </g>
+                        </svg>
+                        <input
+                            #search
+                            type="search"
+                            class="grow"
+                            placeholder="Search"
+                            [formControl]="searchFormControl"
+                            (focusin)="onSearchFocusIn()"
+                            (focusout)="onSearchFocusOut()"
+                        />
+                        <kbd class="kbd kbd-sm">
+                            @if (isMac) {
+                                ⌘
+                            } @else {
+                                Ctrl
+                            }
+                        </kbd>
+                        <kbd class="kbd kbd-sm">K</kbd>
+                    </label>
+                    @if (isSearchOpen()) {
+                        <ul class="dropdown-content menu bg-base-300 rounded-box z-1 w-full p-3 shadow-sm">
+                            @for (resultKV of searchResultGroupedByIcao() | keyvalue; track resultKV.key) {
+                                <li>{{ resultKV.key }}</li>
+                                @for (livestream of resultKV.value; track livestream.videoId) {
+                                    <!-- @TODO: on click zoom to airport, open modal and show the stream  -->
+                                    <li
+                                        class="hover:bg-base-100 mb-1 cursor-pointer pl-3 text-xs"
+                                        (mousedown)="onSelectSearchResult(livestream)"
+                                    >
+                                        &middot; {{ livestream.title }}
+                                    </li>
+                                }
+                            }
+                        </ul>
+                    }
+                </div>
             </div>
         </div>
     `,
-    imports: [RouterLink],
+    imports: [ReactiveFormsModule, TooltipComponent, KeyValuePipe, MenuLinksComponent],
 })
 export class TopbarComponent {
+    public readonly routeState = input.required<IRouteState>();
+
     readonly #destroyRef = inject(DestroyRef);
+    readonly #shortcutsStore = inject(ShortcutsStore);
+    readonly #appStore = inject(AppStore);
     readonly #router = inject(Router);
 
-    public readonly nextRoutingState = signal(ROUTE_STATE_MAP);
+    public readonly isSearchOpen = this.#shortcutsStore.isSearchOpen;
+    public readonly searchFormControl = new FormControl<string>('', { nonNullable: true });
+
+    public readonly searchInput = viewChild<ElementRef<HTMLInputElement>>('search');
+
+    public readonly livestreamStats = computed(() => `${this.#appStore.livestreamsCount()} / ${this.#appStore.airportsCount()}`);
+    public readonly livestreamStatsTitle = computed(
+        () =>
+            `Currently we have ${this.#appStore.airportsCount()} large and medium airports in our database and found ${this.#appStore.livestreamsCount()} livestreams.`,
+    );
+
+    public readonly searchResult = toSignal(
+        this.searchFormControl.valueChanges.pipe(
+            takeUntilDestroyed(this.#destroyRef), //
+            tap(() => {
+                if (!this.isSearchOpen()) {
+                    this.#shortcutsStore.openSearch();
+                }
+            }),
+            debounceTime(100),
+            map((searchValue) => (isEmpty(searchValue) ? [] : this.#appStore.livestreams().filter((ls) => this.#matchLivestream(ls, searchValue)))),
+        ),
+        { initialValue: [] },
+    );
+
+    public readonly searchResultGroupedByIcao = computed(() => {
+        console.log('1');
+        return groupBy((ls) => ls.icao!, this.searchResult());
+    });
+
+    public get isMac(): boolean {
+        return IS_MAC;
+    }
 
     public constructor() {
-        this.#router.events
-            .pipe(
-                takeUntilDestroyed(this.#destroyRef),
-                filter((e) => e instanceof NavigationEnd),
-            )
-            .subscribe((e) => this.nextRoutingState.set(ROUTE_STATE_ALTERNATES[e.urlAfterRedirects] ?? ROUTE_STATE_MAP));
+        effect(() => {
+            const inputElement = this.searchInput()?.nativeElement;
+            if (!isNil(inputElement)) {
+                this.#shortcutsStore.setFocusInputElement(inputElement);
+            }
+        });
+    }
+
+    public onSearchFocusIn() {
+        this.#shortcutsStore.openSearch();
+    }
+
+    public onSearchFocusOut() {
+        console.log('out');
+        this.#shortcutsStore.closeSearch();
+        this.searchFormControl.setValue('');
+    }
+
+    #matchLivestream(livestream: Livestream, searchValue: string): boolean {
+        const s = searchValue.toLowerCase();
+
+        return (
+            (livestream.icao ?? '').toLowerCase().includes(s) || //
+            (livestream.iata ?? '').toLowerCase().includes(s) ||
+            (livestream.title ?? '').toLowerCase().includes(s) ||
+            (livestream.description ?? '').toLowerCase().includes(s) ||
+            (livestream.channelTitle ?? '').toLowerCase().includes(s)
+        );
+    }
+
+    public async onSelectSearchResult(livestream: Livestream) {
+        await this.#router.navigate(['map'], { queryParams: { videoId: [livestream.videoId] } });
     }
 }

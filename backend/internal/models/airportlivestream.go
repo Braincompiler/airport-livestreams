@@ -39,16 +39,15 @@ func (a *AirportLivestreamsOnYoutubeList) UnmarshalBinary(data []byte) error {
 }
 
 type AirportLivestream struct {
-	Icao      string  `json:"icao"`
-	Iata      string  `json:"iata"`
-	Latitude  float64 `json:"lat"`
-	Longitude float64 `json:"lon"`
-	// YoutubeURL   string                                `json:"youtubeURL"`
+	Icao         string `json:"icao"`
+	Iata         string `json:"iata"`
 	VideoId      string `json:"videoId"`
 	Title        string `json:"title"`
 	Description  string `json:"description"`
 	ChannelTitle string `json:"channelTitle"`
+	ChannelId    string `json:"channelId"`
 	// Thumbnails   []AirportLivestreamOnYoutubeThumbnail `json:"thumbnails"`
+	// YoutubeURL   string                                `json:"youtubeURL"`
 }
 
 // , lat, lon float64
@@ -59,8 +58,9 @@ func (a *AirportLivestreamOnYoutube) MapToAirportLivestream(icao, iata string) A
 		Title:        a.Title,
 		Description:  a.Description,
 		ChannelTitle: a.ChannelTitle,
+		ChannelId:    a.ChannelId,
+		VideoId:      a.VideoId,
 		// Thumbnails:   a.Thumbnails,
-		VideoId: a.VideoId,
 		// YoutubeURL:   "https://www.youtube.com/watch?v=" + a.VideoId, // https://www.youtube.com/watch?v=WezTqSbCIIQ
 	}
 }

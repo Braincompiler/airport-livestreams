@@ -23,6 +23,8 @@ func NewAirportsService() AirportsService {
 func (s *airportsService) GetAll(ctx *gofr.Context, types []string) ([]models.AirportListItem, error) {
 	defer util.TimeTrack(time.Now(), "AirportsService.GetAll")
 
+	// @TODO Validate the types (closed, large_airport, medium_airport, seaplane_base, small_airport) // balloonport, heliport
+
 	t := "'large_airport', 'medium_airport'"
 	if len(types) > 0 {
 		t = util.GetAsListForInClause(types)

@@ -15,7 +15,12 @@ export const routes: Routes = [
         loadComponent: () => import('./list').then((m) => m.ListPageComponent),
     },
     {
-        path: 'report-missing-livestream',
-        loadComponent: () => import('./report-missing-livestream').then((m) => m.ReportMissingLivestreamPageComponent),
+        path: 'faq',
+        loadComponent: () => import('./faq').then((m) => m.FAQPageComponent),
     },
+    // {
+    //     path: 'livestream/:videoId',
+    //     loadComponent: () => import('./auxiliary/livestream-dialog').then((m) => m.LivestreamDialogComponent),
+    //     outlet: 'dialog',
+    // },
 ];

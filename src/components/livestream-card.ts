@@ -2,8 +2,7 @@ import { Component, computed, input, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
 import { Livestream } from '@api/data';
-
-import { LivestreamPlayerComponent } from './livestream-player';
+import { LivestreamPlayerComponent } from '@components/livestream-player';
 
 @Component({
     selector: 'als-livestream-card',
@@ -28,10 +27,9 @@ import { LivestreamPlayerComponent } from './livestream-player';
                             (change)="onLivestreamVideoChanged($event)"
                             [value]="livestream.videoId"
                         />
-                        <div
-                            class="collapse-title font-semibold"
-                            [innerHTML]="livestream.title"
-                        ></div>
+                        <div class="collapse-title font-semibold">
+                            <span [innerHTML]="livestream.title"></span>
+                        </div>
                         <div class="collapse-content text-sm">
                             <als-livestream-player
                                 [livestream]="livestream"
@@ -46,7 +44,7 @@ import { LivestreamPlayerComponent } from './livestream-player';
             <als-livestream-player [livestream]="firstLivestream()" />
         }
     `,
-    imports: [LivestreamPlayerComponent, FormsModule],
+    imports: [FormsModule, LivestreamPlayerComponent],
 })
 export class LivestreamCardComponent implements OnInit {
     public readonly livestreams = input.required<Livestream[]>();
