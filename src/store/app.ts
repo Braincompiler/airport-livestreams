@@ -12,12 +12,14 @@ export interface IAppState {
     airports: Airport[];
     livestreams: Livestream[];
     airportTypes: string[];
+    isContactVisible: boolean;
 }
 
 const initialState: IAppState = {
     airports: [],
     livestreams: [],
     airportTypes: [],
+    isContactVisible: false,
 };
 
 const AirportTypeTranslations = {
@@ -79,6 +81,13 @@ export const AppStore = signalStore(
                         ),
                     ),
                 ),
+
+                showContact: () => {
+                    patchState(state, { isContactVisible: true });
+                },
+                hideContact: () => {
+                    patchState(state, { isContactVisible: false });
+                },
             };
         },
     ),

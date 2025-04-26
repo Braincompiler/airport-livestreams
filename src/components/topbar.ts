@@ -11,6 +11,7 @@ import { isEmpty } from '@utils';
 import { groupBy, isNil } from 'ramda';
 
 import { Livestream } from '@api/data';
+import { BrandComponent } from '@components/brand';
 import { MenuLinksComponent } from '@components/menu-links';
 
 import { IRouteState } from '../app/app.component';
@@ -55,7 +56,7 @@ import { TooltipComponent } from './tooltip';
                     class="btn btn-ghost gap-0 text-xl"
                     href="/"
                 >
-                    <span class="text-primary">A</span>irports<span class="text-secondary">L</span>ive.net
+                    <als-brand />
                 </a>
             </div>
             <div class="navbar-end">
@@ -147,7 +148,7 @@ import { TooltipComponent } from './tooltip';
             </div>
         </div>
     `,
-    imports: [ReactiveFormsModule, TooltipComponent, KeyValuePipe, MenuLinksComponent],
+    imports: [ReactiveFormsModule, TooltipComponent, KeyValuePipe, MenuLinksComponent, BrandComponent],
 })
 export class TopbarComponent {
     public readonly routeState = input.required<IRouteState>();

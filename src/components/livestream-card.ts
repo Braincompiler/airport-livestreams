@@ -2,7 +2,7 @@ import { Component, computed, input, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
 import { Livestream } from '@api/data';
-import { LivestreamPlayerComponent } from '@components/livestream-player';
+import { LivestreamPlayerComponent } from '@components';
 
 @Component({
     selector: 'als-livestream-card',

@@ -40,7 +40,7 @@ func QueryAirportLivestreams(svc *youtube.Service, logger logging.Logger, ctx *g
 		List([]string{"snippet"}).
 		Type("video").
 		EventType("live"). // @TODO: support for "upcoming" events?
-		Q("airport live | airportlive | airportslive | flughafen | planespotter | planespotting | avgeeks").
+		Q("airport live | airportlive | airportslive | flughafen | aeropuerto | 공항 | 机场 | 空港 | planespotter | planespotting | avgeeks").
 		SafeSearch("none").
 		Order("relevance").
 		MaxResults(50).
@@ -82,60 +82,3 @@ func QueryAirportLivestreams(svc *youtube.Service, logger logging.Logger, ctx *g
 
 	ctx.GetPublisher().Publish(ctx.Context, consts.PubSubKeyYoutubeLivestreamsUpdated, nil)
 }
-
-// func extractThumbnails(item *youtube.SearchResult) []models.AirportLivestreamOnYoutubeThumbnail {
-// 	thumbnails := make([]models.AirportLivestreamOnYoutubeThumbnail, 0)
-// 	ytThumbnails := item.Snippet.Thumbnails
-
-// 	if ytThumbnails.Default != nil {
-// 		thumbnails = append(thumbnails, models.AirportLivestreamOnYoutubeThumbnail{
-// 			Type:   models.ThumbnailTypeDefault,
-// 			URL:    ytThumbnails.Default.Url,
-// 			Width:  ytThumbnails.Default.Width,
-// 			Height: ytThumbnails.Default.Height,
-// 		})
-// 	}
-
-// 	if ytThumbnails.Medium != nil {
-// 		thumbnails = append(thumbnails, models.AirportLivestreamOnYoutubeThumbnail{
-// 			Type:   models.ThumbnailTypeMedium,
-// 			URL:    ytThumbnails.Medium.Url,
-// 			Width:  ytThumbnails.Medium.Width,
-// 			Height: ytThumbnails.Medium.Height,
-// 		})
-// 	}
-
-// 	if ytThumbnails.High != nil {
-// 		thumbnails = append(thumbnails, models.AirportLivestreamOnYoutubeThumbnail{
-// 			Type:   models.ThumbnailTypeHigh,
-// 			URL:    ytThumbnails.High.Url,
-// 			Width:  ytThumbnails.High.Width,
-// 			Height: ytThumbnails.High.Height,
-// 		})
-// 	}
-
-// 	if ytThumbnails.Standard != nil {
-// 		thumbnails = append(thumbnails, models.AirportLivestreamOnYoutubeThumbnail{
-// 			Type:   models.ThumbnailTypeStandard,
-// 			URL:    ytThumbnails.Standard.Url,
-// 			Width:  ytThumbnails.Standard.Width,
-// 			Height: ytThumbnails.Standard.Height,
-// 		})
-// 	}
-
-// 	if ytThumbnails.Maxres != nil {
-// 		thumbnails = append(thumbnails, models.AirportLivestreamOnYoutubeThumbnail{
-// 			Type:   models.ThumbnailTypeMaxres,
-// 			URL:    ytThumbnails.Maxres.Url,
-// 			Width:  ytThumbnails.Maxres.Width,
-// 			Height: ytThumbnails.Maxres.Height,
-// 		})
-// 	}
-
-// 	return thumbnails
-// }
-
-// func logItem(item *youtube.SearchResult, logger logging.Logger, idx int) {
-// 	logger.Debugf("%d.) %s at channel %s (https://www.youtube.com/watch?v=%s)",
-// 		idx, item.Snippet.Title, item.Snippet.ChannelTitle, item.Id.VideoId)
-// }

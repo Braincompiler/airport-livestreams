@@ -62,6 +62,8 @@ func LivestreamsUpdated(ctx *gofr.Context) error {
 		title := livestream.Title
 		description := livestream.Description
 
+		// TODO: Find out if the livestream is pre-recorded
+
 		foundIcao := icaoRegexp.FindString(title)
 		if foundIcao != "" {
 			ctx.Logger.Debugf("Found ICAO: %s in title %s\n", foundIcao, title)
