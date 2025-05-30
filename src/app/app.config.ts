@@ -1,12 +1,13 @@
 import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
-import { ApplicationConfig, makeEnvironmentProviders, provideExperimentalZonelessChangeDetection } from '@angular/core';
+import { ApplicationConfig, makeEnvironmentProviders, provideZonelessChangeDetection } from '@angular/core';
 import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
 import { provideRouter } from '@angular/router';
+
+import { dataInterceptor } from '@interceptors';
 
 import { Configuration as DataApiConfiguration, ConfigurationParameters as DataApiConfigurationParameters } from '@api/data';
 
 import { environment } from '../environments/environment';
-import { dataInterceptor } from '../interceptors';
 import { routes } from './app.routes';
 
 export function withDataApiConfiguration(configParams: DataApiConfigurationParameters) {
@@ -26,7 +27,7 @@ export function provideDataApi(configuration: DataApiConfiguration) {
 
 export const appConfig: ApplicationConfig = {
     providers: [
-        provideExperimentalZonelessChangeDetection(), //
+        provideZonelessChangeDetection(), //
         provideClientHydration(withEventReplay()),
         provideRouter(routes),
         provideHttpClient(
