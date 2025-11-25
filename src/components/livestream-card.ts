@@ -6,15 +6,6 @@ import { LivestreamPlayerComponent } from '@components';
 
 @Component({
     selector: 'als-livestream-card',
-    styles: [
-        `
-            youtube-player >>> iframe {
-                aspect-ratio: 16 / 9;
-                height: auto;
-                width: 100%;
-            }
-        `,
-    ],
     template: `
         @if (numLivestreams() > 1) {
             <div class="join join-vertical bg-base-100 w-full">

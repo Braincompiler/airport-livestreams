@@ -7,10 +7,14 @@ import { Livestream } from '@api/data';
     selector: 'als-livestream-player',
     styles: [
         `
-            youtube-player >>> iframe {
-                aspect-ratio: 16 / 9;
-                height: auto;
+            :host youtube-player ::ng-deep iframe {
+                /*aspect-ratio: 16 / 9;*/
+                /*height: auto;*/
+                /*width: 100%;*/
+                margin: 0 auto;
+                display: block;
                 width: 100%;
+                height: 70vh;
             }
         `,
     ],

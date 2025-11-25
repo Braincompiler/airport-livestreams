@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve --port 4567 --no-hmr",
+    "start": "ng serve --port 4567",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
@@ -22,7 +22,7 @@
     "@angular/platform-server": "^20.0.0",
     "@angular/router": "^20.0.0",
     "@angular/ssr": "^20.0.0",
-    "@angular/youtube-player": "^19.2.7",
+    "@angular/youtube-player": "^20.0.1",
     "@ngrx/operators": "^19.0.1",
     "@ngrx/signals": "^19.0.1",
     "@tailwindcss/postcss": "^4.0.0",

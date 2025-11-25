@@ -4,13 +4,13 @@ default:
     @just --list
 
 data-service:
-    cd cmd/data && go run .
+    cd cmd/data && go run -gcflags='-d closure=1' .
 
 cronjobs-service:
-    cd cmd/cronjobs && go run .
+    cd cmd/cronjobs && go run -gcflags='-d closure=1' .
 
 importer-service:
-    cd cmd/importer && go run . ./airports.csv ./countries.csv ./regions.csv
+    cd cmd/importer && go run -gcflags='-d closure=1' . ./airports.csv ./countries.csv ./regions.csv
 
 processor-service:
-    cd cmd/processor && go run .
+    cd cmd/processor && go run -gcflags='-d closure=1' .

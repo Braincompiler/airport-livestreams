@@ -138,6 +138,11 @@ export class AppComponent {
                 // tap((d) => console.log(d)),
             )
             .subscribe((url) => this.nextRoutingState.set(ROUTE_STATE_ALTERNATES[url] ?? ROUTE_STATE_MAP));
+
+        // const eventSrc = new EventSource(`${environment.dataEndpoint}/events`);
+        // eventSrc.onmessage = (event) => {
+        //     console.log(event);
+        // };
     }
 
     public sendMessage() {

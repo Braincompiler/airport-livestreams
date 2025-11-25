@@ -20,7 +20,7 @@ import { TooltipComponent } from './tooltip';
 @Component({
     selector: 'als-topbar',
     template: `
-        <div class="navbar bg-base-100 shadow-sm">
+        <div class="navbar bg-base-100 fixed top-0 z-10 shadow-sm">
             <div class="navbar-start">
                 <div class="flex-none lg:hidden">
                     <label

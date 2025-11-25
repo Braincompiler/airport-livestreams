@@ -67,7 +67,7 @@ func QueryAirportLivestreams(svc *youtube.Service, logger logging.Logger, ctx *g
 		})
 
 	if err != nil {
-		ctx.Errorf("failed to query livestreams: %v", err)
+		logger.Errorf("failed to query livestreams: %v", err)
 
 		return
 	}
